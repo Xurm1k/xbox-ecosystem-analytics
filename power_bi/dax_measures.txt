@@ -1,0 +1,60 @@
+#Calculating a Summ of sold consoles
+Total_Console_Sales = 
+SUM(fact_console_sales[units_sold])
+
+#Claculating Average Game Pass subscribers
+Active_Subscribers_GPU = 
+AVERAGE(fact_subscriptions[active_subscribers])
+
+#Calculating Preorder Window Sales
+Preorder_Window_Sales = 
+CALCULATE(
+    [Total_Console_Sales],
+    fact_console_sales[is_preorder_window] = TRUE
+)
+
+#Calculating Avg by category
+Avg_Preorder_Sales_By_Category = 
+AVERAGEX(
+    VALUES(dim_games[release_category]),
+    [Preorder_Window_Sales]
+)
+
+#Calculating a time windows between preorder and release dates of titles
+
+Avg Daily Sales (Preorder Window) = 
+-- Step 1: Collect all valid (preorder_date, release_date) pairs for games in the current category
+VAR ActiveGames = 
+    CALCULATETABLE(
+        FILTER(
+            dim_games,
+            NOT(ISBLANK(dim_games[preorder_date])) &&
+            NOT(ISBLANK(dim_games[release_date]))
+        ),
+        ALLEXCEPT(dim_games, dim_games[category])
+    )
+
+-- Step 2: Retrieve all distinct calendar dates that fall within at least one preorder-to-release window
+VAR PreorderDates = 
+    FILTER(
+        VALUES(dim_dates[Date]),
+        VAR CurrentDate = dim_dates[Date]
+        RETURN
+            COUNTROWS(
+                FILTER(
+                    ActiveGames,
+                    CurrentDate >= dim_games[preorder_date] &&
+                    CurrentDate <= dim_games[release_date]
+                )
+            ) > 0
+    )
+
+RETURN
+-- Step 3: Calculate the average daily sales across those filtered dates
+CALCULATE(
+    AVERAGEX(
+        VALUES(dim_dates[Date]),
+        CALCULATE(SUM(fact_console_sales[units_sold]))
+    ),
+    PreorderDates
+)
