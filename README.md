@@ -7,6 +7,8 @@
 
 An end-to-end analytics strategy exercise exploring how major game releases, Game Pass availability, console sales, and subscriber growth could fit together in a business narrative.
 
+For the project decisions, my contribution, and the limits of the analysis, see [PORTFOLIO_CASE_STUDY.md](PORTFOLIO_CASE_STUDY.md).
+
 > **Data note:** The time series in this repository are synthetic and generated from explicit assumptions. The figures and patterns below are outputs of that model—not observed Xbox or Game Pass results, and not evidence of real-world causal effects.
 
 ---
